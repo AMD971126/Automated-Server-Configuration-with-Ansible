@@ -1,4 +1,6 @@
 # Automated Server Configuration with Ansible
+This repository contains an **Ansible project** that automates full Linux server provisioning and configuration.
+---
 
 ## 📌 Project Overview
 This project demonstrates how to automate Linux server provisioning and configuration using **Ansible**.  
