@@ -1,0 +1,73 @@
+
+---
+- name: Full System Configuration Playbook
+  hosts: Test_Server
+  # become: true
+  # become_user: Deploy
+  vars:
+    dir_path: /etc/demo_config
+    file_name: config
+    message: "Hello from control machine"
+    packages:
+      - curl
+      - htop
+      - git
+
+  tasks:
+  
+    ### 2. 📦 Install Apache Based on OS and Memory ###
+    - name: Install apache2 on Debian-based systems
+      apt:
+        name: apache2
+        state: latest
+        update_cache: yes
+      when:
+        - ansible_os_family == "Debian"
+        - ansible_memtotal_mb >= 512
+    - name: Install httpd on RedHat-based systems
+      yum:
+        name: httpd
+        state: latest
+      when:
+        - ansible_os_family == "RedHat"
+        - ansible_memtotal_mb >= 512
+
+    ### 3. 📁 Create Directory and Config File ###
+    - name: Create demo config directory
+      file:
+        path: "{{ dir_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Create demo config file with message
+      copy:
+        dest: "{{ dir_path }}/{{ file_name }}"
+        content: "{{ message }}"
+        mode: '0644'
+
+    ### 4. 🧠 Print System Facts ###
+    - name: Print number of CPU cores
+      debug:
+        msg: "🧮 CPU Cores: {{ ansible_processor_cores }}"
+
+    - name: Print total memory in MB
+      debug:
+        msg: "🧠 Total Memory (MB): {{ ansible_memtotal_mb }}"
+
+    ### 5. 🔁 Install Multiple Packages Using Loop ###
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop: "{{ packages }}"
+      when: ansible_os_family == "Debian"
+
+    ### 6. ⏱️ Show Uptime ###
+    - name: Run uptime command
+      command: uptime
+      register: uptime_result
+
+    - name: Print uptime output
+      debug:
+        msg: "⏱️ System Uptime: {{ uptime_result.stdout }}"
